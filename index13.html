@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Кликер с уровнями и анимациями</title>
+  <style>
+    /* Новый фон */
+    body {
+      background: linear-gradient(135deg, #ff6a00, #ee0979); /* Новый фон */
+      font-family: 'Roboto', sans-serif;
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      color: #fff;
+      text-align: center;
+    }
+
+    /* Контейнер для игры */
+    .game-container {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+    }
+
+    /* Заголовок и информация о кликах */
+    .score {
+      font-size: 36px;
+      margin-bottom: 20px;
+      font-weight: bold;
+      text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+    }
+
+    .cps {
+      font-size: 20px;
+      margin-bottom: 30px;
+      text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+    }
+
+    /* Кнопка для клика */
+    .click-button {
+      background: linear-gradient(135deg, #ff7e5f, #feb47b);
+      border: none;
+      color: white;
+      padding: 20px 40px;
+      font-size: 28px;
+      font-weight: bold;
+      border-radius: 50px;
+      cursor: pointer;
+      box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
+      transition: transform 0.2s ease, box-shadow 0.3s ease;
+      margin-bottom: 40px;
+    }
+
+    .click-button:hover {
+      transform: scale(1.1);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+    }
+
+    .click-button:active {
+      transform: scale(0.95);
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+    }
+
+    /* Стиль для магазина */
+    .shop {
+      background: rgba(0, 0, 0, 0.7);
+      color: #fff;
+      padding: 20px;
+      border-radius: 20px;
+      width: 350px;
+      position: fixed;
+      right: 20px;
+      top: 50%;
+      transform: translateY(-50%);
+      overflow-y: auto;
+      max-height: 80vh;
+      z-index: 2;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8);
+    }
+
+    .shop h2 {
+      font-size: 24px;
+      margin-bottom: 20px;
+      text-transform: uppercase;
+      text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+    }
+
+    .shop-item {
+      background: linear-gradient(135deg, #ff7e5f, #feb47b);
+      border: none;
+      color: white;
+      padding: 15px;
+      border-radius: 10px;
+      margin-bottom: 10px;
+      cursor: pointer;
+      width: 100%;
+      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .shop-item:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 15px 30px rgba(0, 0, 0, 0.4);
+    }
+
+    /* Прогресс-бар */
+    .level-progress {
+      position: absolute;
+      bottom: 30px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 80%;
+      color: white;
+      text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7);
+    }
+
+    .progress-bar {
+      background: #f1f1f1;
+      border-radius: 20px;
+      width: 100%;
+      height: 25px;
+      overflow: hidden;
+      margin: 15px 0;
+    }
+
+    .progress {
+      background: linear-gradient(135deg, #ff7e5f, #feb47b);
+      height: 100%;
+      width: 0%;
+      transition: width 0.5s ease;
+    }
+
+    /* Стиль для уровня */
+    .level-display, .next-level {
+      font-size: 22px;
+      text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.7);
+    }
+
+    /* Плавная анимация */
+    .click-button.level-up-animation {
+      animation: glow 1s infinite alternate;
+    }
+
+    @keyframes glow {
+      from { box-shadow: 0 0 20px #fff; }
+      to { box-shadow: 0 0 40px #ff00ff; }
+    }
+  </style>
+</head>
+<body>
+  <div class="game-container">
+    <div class="score">Кликов: <span id="clickCount">0</span></div>
+    <div class="cps">Кликов за клик: <span id="clickValue">1</span></div>
+    <button class="click-button" onclick="addClick()">Клик!</button>
+  </div>
+
+  <div class="shop">
+    <h2>Магазин</h2>
+    <button class="shop-item" onclick="buyUpgrade(10, 1)">+1 клик (10 кликов)</button>
+    <button class="shop-item" onclick="buyUpgrade(100, 5)">+5 клик (100 кликов)</button>
+    <button class="shop-item" onclick="buyUpgrade(1000, 50)">+50 клик (1000 кликов)</button>
+    <button class="shop-item" onclick="buyUpgrade(1000000, 500)">+500 клик (1 млн кликов)</button>
+    <button class="shop-item" onclick="buyUpgrade(1000000000, 1)">+1 клик (1 миллиард кликов)</button>
+    <button class="shop-item" onclick="buyUpgrade(50000000000, 10)">+10 клик (50 миллиардов кликов)</button>
+    <button class="shop-item" onclick="buyUpgrade(500000000000, 100)">+100 клик (500 миллиардов кликов)</button>
+    <button class="shop-item" onclick="buyUpgrade(1000000000000, 1000)">+1K клик (1 триллион кликов)</button>
+    <button class="shop-item" onclick="buyUpgrade(10000000000000, 10000)">+10K клик (10 триллионов кликов)</button>
+  </div>
+
+  <div class="level-progress">
+    <div class="level-display">Уровень: <span id="level">1</span></div>
+    <div class="progress-bar">
+      <div class="progress" id="levelProgress"></div>
+    </div>
+    <div class="next-level">До следующего уровня: <span id="nextLevel">100000</span></div>
+  </div>
+
+  <script>
+    let clickCount = 0;
+    let level = 1;
+    let nextLevel = 100000;
+    let levelProgress = 0;
+    let clickValue = 1;
+
+    function addClick() {
+      clickCount += clickValue;
+      document.getElementById('clickCount').textContent = clickCount;
+    }
+
+    function buyUpgrade(cost, value) {
+      if (clickCount >= cost) {
+        clickCount -= cost;
+        clickValue += value;
+        document.getElementById('clickCount').textContent = clickCount;
+        document.getElementById('clickValue').textContent = clickValue;
+      }
+    }
+
+    setInterval(updateLevel, 100);
+
+    function updateLevel() {
+      if (clickCount >= nextLevel) {
+        level++;
+        document.getElementById('level').textContent = level;
+        
+        if (level === 2) {
+          nextLevel = 500000;
+        } else if (level === 3) {
+          nextLevel = 1000000;
+        } else if (level === 4) {
+          nextLevel = 1000000000;
+        } else if (level === 5) {
+          nextLevel = 1000000000000;
+        } else {
+          nextLevel = nextLevel * 10;
+        }
+
+        document.getElementById('nextLevel').textContent = nextLevel;
+
+        document.querySelector('.click-button').classList.add('level-up-animation');
+        setTimeout(() => document.querySelector('.click-button').classList.remove('level-up-animation'), 1000);
+      }
+
+      levelProgress = (clickCount / nextLevel) * 100;
+      document.getElementById('levelProgress').style.width = levelProgress + '%';
+    }
+  </script>
+</body>
+</html>
